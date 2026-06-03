@@ -1,0 +1,71 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Create deployment package
+        run: |
+          tar -czf deploy.tar.gz --exclude='public/uploads' .next src public package.json package-lock.json next.config.js tsconfig.json postcss.config.js tailwind.config.ts
+
+      - name: Create directory on server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          timeout: 60s
+          command_timeout: 30m
+          script: |
+            mkdir -p /var/www/ivantaproperty
+
+      - name: Deploy to Server via SFTP
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        with:
+          server: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          ssh_private_key: ${{ secrets.SSH_KEY }}
+          local_path: './deploy.tar.gz'
+          remote_path: '/var/www/ivantaproperty/deploy.tar.gz'
+          sftp_only: true
+          port: 22
+
+      - name: Install dependencies and restart PM2 on server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          timeout: 60s
+          command_timeout: 30m
+          script: |
+            cd /var/www/ivantaproperty
+            tar -xzf deploy.tar.gz
+            rm deploy.tar.gz
+            npm ci --production
+            mkdir -p public/uploads
+            pm2 delete ivantaproperty || true
+            PORT=3005 pm2 start npm --name "ivantaproperty" -- start
+            pm2 save
