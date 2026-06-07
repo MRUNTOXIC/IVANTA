@@ -26,7 +26,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState('Home');
+  const [currentScreen, setCurrentScreen] = useState<keyof RootStackParamList>('Home');
   const navRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
 
@@ -58,7 +58,7 @@ export default function App() {
             ref={navRef}
             onStateChange={(state) => {
               const route = state?.routes[state.index];
-              if (route) setCurrentScreen(route.name);
+              if (route) setCurrentScreen(route.name as keyof RootStackParamList);
             }}
           >
             <StatusBar style="dark" />
