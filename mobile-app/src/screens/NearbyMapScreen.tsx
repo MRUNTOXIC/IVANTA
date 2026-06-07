@@ -99,9 +99,9 @@ export default function NearbyMapScreen() {
             initialRegion={region}
             showsUserLocation
           >
-            {/* OpenStreetMap tiles — same as website, free, no API key */}
+            {/* Carto basemap tiles - free, app-friendly, no blocking */}
             <UrlTile
-              urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+              urlTemplate="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
               maximumZ={19}
               flipY={false}
             />
