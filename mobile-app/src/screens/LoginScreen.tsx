@@ -12,24 +12,14 @@ import { useAuth } from '../auth/context';
 import type { UserRole } from '../auth/types';
 import { API_BASE, appEmailLogin } from '../services/api';
 
-const ROLES: { value: UserRole; icon: string }[] = [
-  { value: 'User', icon: 'person-outline' },
-  { value: 'Broker', icon: 'briefcase-outline' },
-  { value: 'Builder', icon: 'business-outline' },
-];
-
-const ROLE_DESC: Record<UserRole, string> = {
-  User: 'For property seekers',
-  Broker: 'For real estate agents',
-  Builder: 'For property developers',
-};
+const DEFAULT_ROLE: UserRole = 'User';
 
 export default function LoginScreen() {
   const nav = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Login'>>();
   const { setUser } = useAuth();
 
-  const [role, setRole] = useState<UserRole>(route.params?.role ?? 'User');
+  const role: UserRole = DEFAULT_ROLE;
   const [isSignUp, setIsSignUp] = useState(true);
 
   // Sign Up state
@@ -52,7 +42,7 @@ export default function LoginScreen() {
   // ── Google OAuth ─────────────────────────────────────────────────────────────
   const handleGoogle = () => {
     const base = API_BASE.replace('/api', '');
-    Linking.openURL(`${base}/api/auth/google?role=${role}&source=app&returnTo=/dashboard`);
+    Linking.openURL(`${base}/api/auth/google?role=${DEFAULT_ROLE}&source=app&returnTo=/dashboard`);
   };
 
   // ── OTP Send ─────────────────────────────────────────────────────────────────
@@ -64,7 +54,7 @@ export default function LoginScreen() {
       const res = await fetch(`${API_BASE}/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile, name, email, role }),
+        body: JSON.stringify({ mobile, name, email, role: DEFAULT_ROLE }),
       });
       const data = await res.json();
       if (data?.success) {
@@ -96,7 +86,7 @@ export default function LoginScreen() {
       const res = await fetch(`${API_BASE}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile, otp, name, email, role, isApp: true }),
+        body: JSON.stringify({ mobile, otp, name, email, role: DEFAULT_ROLE, isApp: true }),
       });
       const data = await res.json();
       if (data?.success && data?.token) {
@@ -120,7 +110,7 @@ export default function LoginScreen() {
     setError('');
     setSigningIn(true);
     try {
-      const user = await appEmailLogin(signInEmail.trim(), signInPassword, role);
+      const user = await appEmailLogin(signInEmail.trim(), signInPassword);
       if (!user) throw new Error('Invalid credentials or server error.');
       setUser(user);
       nav.goBack();
@@ -146,21 +136,6 @@ export default function LoginScreen() {
       </View>
 
       <ScrollView contentContainerStyle={s.body} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-
-        {/* Role Selector */}
-        <Text style={s.sectionLabel}>Select Login Type</Text>
-        <View style={s.roleRow}>
-          {ROLES.map(r => {
-            const on = role === r.value;
-            return (
-              <TouchableOpacity key={r.value} style={[s.roleCard, on && s.roleCardOn]} onPress={() => setRole(r.value)}>
-                <Ionicons name={r.icon as any} size={26} color={on ? '#c0392b' : '#6b7280'} />
-                <Text style={[s.roleCardLabel, on && s.roleCardLabelOn]}>{r.value}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-        <Text style={s.roleDesc}>{ROLE_DESC[role]}</Text>
 
         {/* Google Button */}
         <TouchableOpacity style={s.googleBtn} onPress={handleGoogle} activeOpacity={0.85}>
@@ -295,6 +270,22 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Upgrade role */}
+        <View style={s.upgradeBox}>
+          <Text style={s.upgradeTitle}>Are you a Broker or Builder?</Text>
+          <Text style={s.upgradeSub}>Sign up as User then request a role upgrade from your Profile.</Text>
+          <View style={s.upgradeRow}>
+            <TouchableOpacity style={s.upgradeBtn} onPress={() => Linking.openURL(`${API_BASE.replace('/api', '')}/login?role=Broker`)}>
+              <Ionicons name="briefcase-outline" size={15} color="#7c3aed" />
+              <Text style={[s.upgradeBtnText, { color: '#7c3aed' }]}>Broker Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[s.upgradeBtn, { borderColor: '#1d4ed8' }]} onPress={() => Linking.openURL(`${API_BASE.replace('/api', '')}/login?role=Builder`)}>
+              <Ionicons name="business-outline" size={15} color="#1d4ed8" />
+              <Text style={[s.upgradeBtnText, { color: '#1d4ed8' }]}>Builder Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -383,4 +374,10 @@ const s = StyleSheet.create({
   toggleLink: { fontSize: 14, color: '#c0392b', fontWeight: '700' },
 
   error: { color: '#b91c1c', fontSize: 12, fontWeight: '600', marginBottom: 12, textAlign: 'center' },
+  upgradeBox: { marginTop: 24, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: '#e5e7eb', backgroundColor: '#f9fafb' },
+  upgradeTitle: { fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 4 },
+  upgradeSub: { fontSize: 11, color: '#6b7280', lineHeight: 16, marginBottom: 12 },
+  upgradeRow: { flexDirection: 'row', gap: 10 },
+  upgradeBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 8, borderWidth: 1.5, borderColor: '#7c3aed', backgroundColor: '#fff' },
+  upgradeBtnText: { fontSize: 12, fontWeight: '700' },
 });

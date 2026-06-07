@@ -15,6 +15,7 @@ import SearchScreen from './src/screens/SearchScreen';
 import PostPropertyScreen from './src/screens/PostPropertyScreen';
 import FiltersScreen from './src/screens/FiltersScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import NearbyMapScreen from './src/screens/NearbyMapScreen';
 import DrawerMenu from './src/components/DrawerMenu';
 import { DrawerContext, RootStackParamList } from './src/navigation';
 import { AuthContext } from './src/auth/context';
@@ -66,6 +67,8 @@ export default function App() {
               <Stack.Screen name="Properties" component={PropertiesScreen} />
               <Stack.Screen name="Filters" component={FiltersScreen} />
               <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="NearbyMap" component={NearbyMapScreen}
+                options={{ headerShown: true, title: 'Nearby Properties', headerStyle: { backgroundColor: '#fff' }, headerTintColor: '#1f2937' }} />
               <Stack.Screen name="PropertyDetail" component={PropertyDetailScreen}
                 options={{ headerShown: true, title: 'Property Details', headerStyle: { backgroundColor: '#fff' }, headerTintColor: '#1f2937' }} />
               <Stack.Screen name="Search" component={SearchScreen}

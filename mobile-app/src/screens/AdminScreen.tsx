@@ -8,9 +8,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import {
   adminLogin, adminGetAllProperties, adminDeleteProperty,
-  adminMarkSold, getAnalytics, getAdminCookie,
+  adminMarkSold, adminGetUsers, adminUpdateUserRole, getAnalytics, getAdminCookie,
 } from '../services/api';
 import { Property } from '../types/Property';
+import type { UserRole } from '../auth/types';
 
 // ─── STAT CARD ────────────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, color }: { icon: string; label: string; value: string | number; color: string }) {
@@ -90,18 +91,25 @@ function PropertyRow({ property, onDelete, onMarkSold }: {
 
 // ─── MAIN SCREEN ──────────────────────────────────────────────────────────────
 export default function AdminScreen() {
+  type AdminUser = { _id: string; name: string; email: string; role: UserRole; phone?: string };
+
   const [loggedIn, setLoggedIn] = useState(false);
   const [logging, setLogging] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
   const [filtered, setFiltered] = useState<Property[]>([]);
   const [search, setSearch] = useState('');
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
+  const [usersSearch, setUsersSearch] = useState('');
+  const [usersFilter, setUsersFilter] = useState<'All' | 'User' | 'Broker' | 'Builder'>('All');
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState<'properties' | 'analytics'>('properties');
+  const [tab, setTab] = useState<'properties' | 'analytics' | 'users'>('properties');
   const [analytics, setAnalytics] = useState<any>(null);
   const [typeFilter, setTypeFilter] = useState('all');
 
   const TYPE_FILTERS = ['all', 'buy', 'rent', 'commercial', 'plot', 'pg'];
+  const USER_FILTERS: AdminUser['role'][] | ['All', ...AdminUser['role'][]] = ['All', 'User', 'Broker', 'Builder'];
 
   // Auto-login on mount if cookie already set
   useEffect(() => {
@@ -118,13 +126,27 @@ export default function AdminScreen() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [props, stats] = await Promise.all([adminGetAllProperties(), getAnalytics()]);
+    const [props, stats, userList] = await Promise.all([adminGetAllProperties(), getAnalytics(), adminGetUsers()]);
     setProperties(props);
     setFiltered(props);
     setAnalytics(stats);
+    setUsers(userList);
+    setFilteredUsers(userList);
     setLoading(false);
     setRefreshing(false);
   }, []);
+
+  useEffect(() => {
+    let list = [...users];
+    if (usersFilter !== 'All') list = list.filter((userItem) => userItem.role === usersFilter);
+    if (usersSearch.trim()) {
+      list = list.filter((userItem) =>
+        userItem.name.toLowerCase().includes(usersSearch.toLowerCase()) ||
+        userItem.email.toLowerCase().includes(usersSearch.toLowerCase())
+      );
+    }
+    setFilteredUsers(list);
+  }, [users, usersFilter, usersSearch]);
 
   useEffect(() => { if (loggedIn) loadData(); }, [loggedIn]);
 
@@ -135,6 +157,22 @@ export default function AdminScreen() {
     if (search.trim()) list = list.filter(p => p.title?.toLowerCase().includes(search.toLowerCase()) || p.area?.toLowerCase().includes(search.toLowerCase()));
     setFiltered(list);
   }, [search, typeFilter, properties]);
+
+  const handleRoleChange = async (id: string, newRole: UserRole) => {
+    const userToUpdate = users.find((item) => item._id === id);
+    if (!userToUpdate || userToUpdate.role === newRole) return;
+
+    const res = await adminUpdateUserRole(id, newRole);
+    if (res.success && res.data) {
+      const updated = res.data;
+      setUsers((prev) => prev.map((item) => (item._id === id ? updated : item)));
+      setFilteredUsers((prev) => prev.map((item) => (item._id === id ? updated : item)));
+      Alert.alert('Role updated', `${updated.name} is now ${updated.role}`);
+      return;
+    }
+
+    Alert.alert('Update failed', res.error ?? 'Could not update user role');
+  };
 
   const handleDelete = (id: string, title: string) => {
     Alert.alert('Delete Property', `Delete "${title}"?`, [
@@ -219,6 +257,9 @@ export default function AdminScreen() {
         <TouchableOpacity style={[styles.tab, tab === 'properties' && styles.tabActive]} onPress={() => setTab('properties')}>
           <Text style={[styles.tabText, tab === 'properties' && styles.tabTextActive]}>Properties</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={[styles.tab, tab === 'users' && styles.tabActive]} onPress={() => setTab('users')}>
+          <Text style={[styles.tabText, tab === 'users' && styles.tabTextActive]}>Users</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={[styles.tab, tab === 'analytics' && styles.tabActive]} onPress={() => setTab('analytics')}>
           <Text style={[styles.tabText, tab === 'analytics' && styles.tabTextActive]}>Analytics</Text>
         </TouchableOpacity>
@@ -276,35 +317,78 @@ export default function AdminScreen() {
             <Ionicons name="search-outline" size={16} color="#9ca3af" />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search by title or area..."
+              placeholder={tab === 'users' ? 'Search users by name or email...' : 'Search by title or area...'}
               placeholderTextColor="#9ca3af"
-              value={search}
-              onChangeText={setSearch}
+              value={tab === 'users' ? usersSearch : search}
+              onChangeText={tab === 'users' ? setUsersSearch : setSearch}
             />
-            {search.length > 0 && (
-              <TouchableOpacity onPress={() => setSearch('')}>
+            {(tab === 'users' ? usersSearch.length : search.length) > 0 && (
+              <TouchableOpacity onPress={() => tab === 'users' ? setUsersSearch('') : setSearch('')}>
                 <Ionicons name="close-circle" size={16} color="#9ca3af" />
               </TouchableOpacity>
             )}
           </View>
 
-          {/* Type filter chips */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow} contentContainerStyle={{ gap: 8, paddingHorizontal: 12 }}>
-            {TYPE_FILTERS.map(t => (
-              <TouchableOpacity key={t} style={[styles.chip, typeFilter === t && styles.chipActive]} onPress={() => setTypeFilter(t)}>
-                <Text style={[styles.chipText, typeFilter === t && styles.chipTextActive]}>
-                  {t === 'all' ? `All (${total})` : `${t.toUpperCase()} (${byType[t] ?? 0})`}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          {tab === 'users' ? (
+            <>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow} contentContainerStyle={{ gap: 8, paddingHorizontal: 12 }}>
+                {USER_FILTERS.map((role) => (
+                  <TouchableOpacity key={role} style={[styles.chip, usersFilter === role && styles.chipActive]} onPress={() => setUsersFilter(role)}>
+                    <Text style={[styles.chipText, usersFilter === role && styles.chipTextActive]}>{role}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
 
-          <Text style={styles.resultCount}>{filtered.length} properties</Text>
+              <Text style={styles.resultCount}>{filteredUsers.length} users</Text>
+            </>
+          ) : (
+            <>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow} contentContainerStyle={{ gap: 8, paddingHorizontal: 12 }}>
+                {TYPE_FILTERS.map(t => (
+                  <TouchableOpacity key={t} style={[styles.chip, typeFilter === t && styles.chipActive]} onPress={() => setTypeFilter(t)}>
+                    <Text style={[styles.chipText, typeFilter === t && styles.chipTextActive]}>
+                      {t === 'all' ? `All (${total})` : `${t.toUpperCase()} (${byType[t] ?? 0})`}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <Text style={styles.resultCount}>{filtered.length} properties</Text>
+            </>
+          )}
 
           <ScrollView
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#c0392b" />}
           >
-            {filtered.length === 0 ? (
+            {tab === 'users' ? (
+              filteredUsers.length === 0 ? (
+                <View style={styles.empty}>
+                  <Ionicons name="people-outline" size={48} color="#d1d5db" />
+                  <Text style={styles.emptyText}>No users found</Text>
+                </View>
+              ) : (
+                filteredUsers.map((userItem) => (
+                  <View key={userItem._id} style={styles.userCard}>
+                    <View style={styles.userDetails}>
+                      <Text style={styles.userName}>{userItem.name}</Text>
+                      <Text style={styles.userEmail}>{userItem.email}</Text>
+                      <Text style={styles.userRoleLabel}>Current role: {userItem.role}</Text>
+                    </View>
+                    <View style={styles.userActions}>
+                      {['User', 'Broker', 'Builder'].map((roleOption) => (
+                        <TouchableOpacity
+                          key={roleOption}
+                          style={[styles.roleButton, userItem.role === roleOption && styles.roleButtonActive]}
+                          onPress={() => handleRoleChange(userItem._id, roleOption as UserRole)}
+                        >
+                          <Text style={[styles.roleButtonText, userItem.role === roleOption && styles.roleButtonTextActive]}>{roleOption}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                ))
+              )
+            ) : filtered.length === 0 ? (
               <View style={styles.empty}>
                 <Ionicons name="home-outline" size={48} color="#d1d5db" />
                 <Text style={styles.emptyText}>No properties found</Text>
@@ -404,6 +488,18 @@ const styles = StyleSheet.create({
   menuTitle: { fontSize: 14, fontWeight: '700', color: '#1f2937', marginBottom: 16 },
   menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
   menuItemText: { fontSize: 15, fontWeight: '600', color: '#374151' },
+
+  // User role manager
+  userCard: { backgroundColor: '#fff', marginHorizontal: 12, marginBottom: 10, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#e5e7eb' },
+  userDetails: { marginBottom: 12 },
+  userName: { fontSize: 14, fontWeight: '700', color: '#111827' },
+  userEmail: { fontSize: 12, color: '#6b7280', marginTop: 2 },
+  userRoleLabel: { fontSize: 11, color: '#6b7280', marginTop: 6 },
+  userActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  roleButton: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 999, backgroundColor: '#f3f4f6' },
+  roleButtonActive: { backgroundColor: '#c0392b' },
+  roleButtonText: { fontSize: 11, fontWeight: '700', color: '#6b7280' },
+  roleButtonTextActive: { color: '#fff' },
 
   // Empty
   empty: { alignItems: 'center', paddingTop: 60 },

@@ -54,6 +54,19 @@ async function put(url: string, body: object, headers?: Record<string, string>) 
   }
 }
 
+async function patch(url: string, body: object, headers?: Record<string, string>) {
+  try {
+    const res = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify(body),
+    });
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 async function del(url: string, headers?: Record<string, string>) {
   try {
     const res = await fetch(url, {
@@ -199,6 +212,16 @@ export async function adminDeleteProperty(id: string): Promise<{ success: boolea
 
 export async function adminMarkSold(id: string): Promise<{ success: boolean; error?: string }> {
   const data = await post(`${API_BASE}/properties/${id}/sold`, {}, adminHeaders());
+  return data ?? { success: false, error: 'Network error' };
+}
+
+export async function adminGetUsers(): Promise<{ _id: string; name: string; email: string; role: UserRole; phone?: string }[]> {
+  const data = await get(`${API_BASE}/users`, adminHeaders());
+  return data?.data ?? [];
+}
+
+export async function adminUpdateUserRole(id: string, role: UserRole): Promise<{ success: boolean; data?: { _id: string; name: string; email: string; role: UserRole }; error?: string }> {
+  const data = await patch(`${API_BASE}/users/${id}`, { role }, adminHeaders());
   return data ?? { success: false, error: 'Network error' };
 }
 

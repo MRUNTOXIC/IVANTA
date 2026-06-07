@@ -12,6 +12,7 @@ export type RootStackParamList = {
   PostProperty: undefined;
   Filters: { type?: string; initial?: MobileFilters; properties: FilterPropertyLite[]; returnParams?: { type?: string; category?: string } };
   Login: { role?: UserRole } | undefined;
+  NearbyMap: { initialLocation?: { latitude: number; longitude: number } } | undefined;
 };
 
 export const DrawerContext = createContext<{
