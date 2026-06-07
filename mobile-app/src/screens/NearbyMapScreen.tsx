@@ -98,7 +98,6 @@ export default function NearbyMapScreen() {
             style={styles.map}
             initialRegion={region}
             showsUserLocation
-            showsMyLocationButton
           >
             {/* OpenStreetMap tiles — same as website, free, no API key */}
             <UrlTile

@@ -24,7 +24,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.ivanta.properties"
+      "package": "com.ivanta.properties",
+      "googleMapsApiKey": " "
     },
     "web": {
       "favicon": "./assets/favicon.png"
