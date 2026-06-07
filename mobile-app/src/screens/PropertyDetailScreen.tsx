@@ -70,7 +70,10 @@ export default function PropertyDetailScreen() {
   const openMap = async () => {
     const query = hasCoords ? `${lat},${lng}` : address;
     if (!query) return;
-    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    // Use OpenStreetMap — same as website, free
+    const url = hasCoords
+      ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`
+      : `https://www.openstreetmap.org/search?query=${encodeURIComponent(address)}`;
     const supported = await Linking.canOpenURL(url);
     if (supported) await Linking.openURL(url);
   };
