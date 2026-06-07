@@ -199,7 +199,7 @@ export default function FiltersScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
         <Section title="Search">
           <View style={styles.searchBox}>
             <Ionicons name="search-outline" size={16} color="#9ca3af" />
@@ -235,13 +235,7 @@ export default function FiltersScreen() {
         {availableSubTypes.length > 0 && (
           <Section title="Sub Type">
             {availableSubTypes.map(st => (
-              <CheckRow
-                key={st}
-                label={st}
-                rightText={String(countBySubType(st))}
-                checked={selectedSubTypes.includes(st)}
-                onPress={() => setSelectedSubTypes(toggle(selectedSubTypes, st))}
-              />
+              <CheckRow key={st} label={st} rightText={String(countBySubType(st))} checked={selectedSubTypes.includes(st)} onPress={() => setSelectedSubTypes(toggle(selectedSubTypes, st))} />
             ))}
           </Section>
         )}
@@ -249,13 +243,7 @@ export default function FiltersScreen() {
         {availableBedrooms.length > 0 && (
           <Section title="Bedrooms">
             {availableBedrooms.map(b => (
-              <CheckRow
-                key={b}
-                label={b}
-                rightText={String(countByBedroom(b))}
-                checked={selectedBedrooms.includes(b)}
-                onPress={() => setSelectedBedrooms(toggle(selectedBedrooms, b))}
-              />
+              <CheckRow key={b} label={b} rightText={String(countByBedroom(b))} checked={selectedBedrooms.includes(b)} onPress={() => setSelectedBedrooms(toggle(selectedBedrooms, b))} />
             ))}
           </Section>
         )}
@@ -269,95 +257,46 @@ export default function FiltersScreen() {
               <Text style={[styles.segText, budgetMode === 'custom' && styles.segTextOn]}>Custom</Text>
             </TouchableOpacity>
           </View>
-
           {budgetMode === 'ranges' ? (
             BUDGET_RANGES.map(r => (
-              <CheckRow
-                key={r.label}
-                label={r.label}
-                rightText={String(countByBudget(r.min, r.max))}
-                checked={selectedBudgetRanges.includes(r.label)}
-                onPress={() => setSelectedBudgetRanges(toggle(selectedBudgetRanges, r.label))}
-              />
+              <CheckRow key={r.label} label={r.label} rightText={String(countByBudget(r.min, r.max))} checked={selectedBudgetRanges.includes(r.label)} onPress={() => setSelectedBudgetRanges(toggle(selectedBudgetRanges, r.label))} />
             ))
           ) : (
             <View style={styles.row2}>
-              <TextInput
-                value={minPrice}
-                onChangeText={setMinPrice}
-                placeholder="Min (number)"
-                placeholderTextColor="#9ca3af"
-                keyboardType="numeric"
-                style={styles.input}
-              />
-              <TextInput
-                value={maxPrice}
-                onChangeText={setMaxPrice}
-                placeholder="Max (number)"
-                placeholderTextColor="#9ca3af"
-                keyboardType="numeric"
-                style={styles.input}
-              />
+              <TextInput value={minPrice} onChangeText={setMinPrice} placeholder="Min (number)" placeholderTextColor="#9ca3af" keyboardType="numeric" style={styles.input} />
+              <TextInput value={maxPrice} onChangeText={setMaxPrice} placeholder="Max (number)" placeholderTextColor="#9ca3af" keyboardType="numeric" style={styles.input} />
             </View>
           )}
         </Section>
 
         <Section title="Area (Sq.ft.)">
           <View style={styles.row2}>
-            <TextInput
-              value={minSqft}
-              onChangeText={setMinSqft}
-              placeholder="Min sqft"
-              placeholderTextColor="#9ca3af"
-              keyboardType="numeric"
-              style={styles.input}
-            />
-            <TextInput
-              value={maxSqft}
-              onChangeText={setMaxSqft}
-              placeholder="Max sqft"
-              placeholderTextColor="#9ca3af"
-              keyboardType="numeric"
-              style={styles.input}
-            />
+            <TextInput value={minSqft} onChangeText={setMinSqft} placeholder="Min sqft" placeholderTextColor="#9ca3af" keyboardType="numeric" style={styles.input} />
+            <TextInput value={maxSqft} onChangeText={setMaxSqft} placeholder="Max sqft" placeholderTextColor="#9ca3af" keyboardType="numeric" style={styles.input} />
           </View>
         </Section>
 
-        <Section title="Facing Direction">
-          {FACING.map(f => (
-            <CheckRow
-              key={f}
-              label={f}
-              rightText={String(countByFacing(f))}
-              checked={selectedFacing.includes(f)}
-              onPress={() => setSelectedFacing(toggle(selectedFacing, f))}
-            />
-          ))}
-        </Section>
-
-        <Section title="Filter by Area">
-          <View style={styles.searchBox}>
-            <Ionicons name="location-outline" size={16} color="#9ca3af" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search area..."
-              placeholderTextColor="#9ca3af"
-              value={areaSearch}
-              onChangeText={setAreaSearch}
-            />
-          </View>
-          <View style={{ marginTop: 8 }}>
-            {filteredAreas.slice(0, 40).map(a => (
-              <CheckRow
-                key={a}
-                label={a}
-                rightText={String(countByArea(a))}
-                checked={selectedAreas.includes(a)}
-                onPress={() => setSelectedAreas(toggle(selectedAreas, a))}
-              />
+        {FACING.some(f => countByFacing(f) > 0) && (
+          <Section title="Facing Direction">
+            {FACING.filter(f => countByFacing(f) > 0).map(f => (
+              <CheckRow key={f} label={f} rightText={String(countByFacing(f))} checked={selectedFacing.includes(f)} onPress={() => setSelectedFacing(toggle(selectedFacing, f))} />
             ))}
-          </View>
-        </Section>
+          </Section>
+        )}
+
+        {availableAreas.length > 0 && (
+          <Section title="Filter by Area">
+            <View style={styles.searchBox}>
+              <Ionicons name="location-outline" size={16} color="#9ca3af" />
+              <TextInput style={styles.searchInput} placeholder="Search area..." placeholderTextColor="#9ca3af" value={areaSearch} onChangeText={setAreaSearch} />
+            </View>
+            <View style={{ marginTop: 4 }}>
+              {filteredAreas.slice(0, 40).map(a => (
+                <CheckRow key={a} label={a} rightText={String(countByArea(a))} checked={selectedAreas.includes(a)} onPress={() => setSelectedAreas(toggle(selectedAreas, a))} />
+              ))}
+            </View>
+          </Section>
+        )}
       </ScrollView>
 
       <View style={styles.footer}>
@@ -398,14 +337,14 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontSize: 16, fontWeight: '800', color: '#111827' },
   clear: { fontSize: 13, fontWeight: '700', color: '#c0392b' },
 
-  section: { paddingHorizontal: 14, paddingTop: 14, paddingBottom: 6 },
-  sectionTitle: { fontSize: 13, fontWeight: '800', color: '#111827', marginBottom: 10 },
-  card: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 14, paddingHorizontal: 12, paddingVertical: 10 },
+  section: { paddingHorizontal: 14, paddingTop: 10, paddingBottom: 2 },
+  sectionTitle: { fontSize: 12, fontWeight: '800', color: '#111827', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
+  card: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
 
   searchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10 },
   searchInput: { flex: 1, padding: 0, fontSize: 13, color: '#111827' },
 
-  checkRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
+  checkRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 },
   checkbox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1.5, borderColor: '#d1d5db', justifyContent: 'center', alignItems: 'center' },
   checkboxOn: { backgroundColor: '#c0392b', borderColor: '#c0392b' },
   checkLabel: { flex: 1, fontSize: 13, color: '#374151' },
