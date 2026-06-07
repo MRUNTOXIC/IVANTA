@@ -88,8 +88,12 @@ export default function HomeScreen() {
   // What to show in Nearby section
   const nearbyDisplayList = nearbyList.length > 0 ? nearbyList : allProperties.slice(0, 10);
   const nearbyLabel = nearbyList.length > 0
-    ? `${nearbyList.length} properties near you`
-    : locStatus === 'denied' ? 'GPS off — showing top properties' : 'Top properties';
+    ? `${nearbyList.length} properties within 3km`
+    : locStatus === 'denied'
+      ? 'GPS off — showing top properties'
+      : locStatus === 'granted'
+        ? 'No properties within 3km — showing top picks'
+        : 'Top properties';
 
   const categories = CATEGORY_ORDER.filter(c => byCategory[c]?.length > 0);
   const builderCount = byCategory['Upcoming Projects']?.length ?? 0;
@@ -175,12 +179,10 @@ export default function HomeScreen() {
               </Text>
               <Text style={s.sectionSub}>{nearbyLabel}</Text>
             </View>
-            {nearbyList.length > 0 && (
-              <TouchableOpacity style={s.seeAllBtn} onPress={() => nav.navigate('NearbyMap', { initialLocation: userLocation ?? undefined })}>
-                <Text style={s.seeAllText}>Map</Text>
-                <Ionicons name="map-outline" size={14} color="#c0392b" />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity style={s.seeAllBtn} onPress={() => nav.navigate('NearbyMap', { initialLocation: userLocation ?? undefined })}>
+              <Text style={s.seeAllText}>See on Map</Text>
+              <Ionicons name="map-outline" size={14} color="#c0392b" />
+            </TouchableOpacity>
           </View>
 
           {locStatus === 'loading' ? (
