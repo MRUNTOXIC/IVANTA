@@ -247,26 +247,6 @@ export default function HomeScreen() {
           );
         })}
 
-        {/* WHY CHOOSE US */}
-        <View style={s.whySection}>
-          <Text style={s.whyTitle}>Why Choose Ivanta</Text>
-          <Text style={s.whySub}>Experience the difference with our customer-first approach</Text>
-          <View style={s.whyGrid}>
-            {[
-              { icon: 'gift-outline',     title: 'Free Service',        desc: 'No hidden charges for buyers & renters.' },
-              { icon: 'eye-outline',      title: 'Fully Transparent',   desc: 'Every detail upfront — pricing & history.' },
-              { icon: 'sparkles-outline', title: 'Seamless Experience', desc: 'From search to keys, smooth at every step.' },
-              { icon: 'layers-outline',   title: 'One Stop Solution',   desc: 'Buy, rent, loan — everything under one roof.' },
-            ].map(f => (
-              <View key={f.title} style={s.whyCard}>
-                <View style={s.whyIconWrap}><Ionicons name={f.icon as any} size={22} color="#fff" /></View>
-                <Text style={s.whyCardTitle}>{f.title}</Text>
-                <Text style={s.whyCardDesc}>{f.desc}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
         <View style={s.footerStrip}>
           <Text style={s.footerText}>© {new Date().getFullYear()} Ivanta Ventures LLP</Text>
           <TouchableOpacity onPress={() => nav.navigate('Profile')}>

@@ -385,13 +385,13 @@ const styles = StyleSheet.create({
   resultCount: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
   clearAll: { fontSize: 12, color: '#c0392b', fontWeight: '600' },
 
-  pillsRow: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  pillsContent: { paddingHorizontal: 12, paddingVertical: 8, alignItems: 'flex-start', gap: 6 },
+  pillsRow: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6', height: 44 },
+  pillsContent: { paddingHorizontal: 12, paddingVertical: 7, alignItems: 'center', gap: 6 },
   pill: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fecaca',
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
-    height: 30,
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999,
+    height: 28,
   },
   pillText: { fontSize: 11, fontWeight: '600', color: '#c0392b' },
 

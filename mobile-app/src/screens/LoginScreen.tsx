@@ -270,22 +270,6 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Upgrade role */}
-        <View style={s.upgradeBox}>
-          <Text style={s.upgradeTitle}>Are you a Broker or Builder?</Text>
-          <Text style={s.upgradeSub}>Sign up as User then request a role upgrade from your Profile.</Text>
-          <View style={s.upgradeRow}>
-            <TouchableOpacity style={s.upgradeBtn} onPress={() => Linking.openURL(`${API_BASE.replace('/api', '')}/login?role=Broker`)}>
-              <Ionicons name="briefcase-outline" size={15} color="#7c3aed" />
-              <Text style={[s.upgradeBtnText, { color: '#7c3aed' }]}>Broker Login</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[s.upgradeBtn, { borderColor: '#1d4ed8' }]} onPress={() => Linking.openURL(`${API_BASE.replace('/api', '')}/login?role=Builder`)}>
-              <Ionicons name="business-outline" size={15} color="#1d4ed8" />
-              <Text style={[s.upgradeBtnText, { color: '#1d4ed8' }]}>Builder Login</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
       </ScrollView>
     </SafeAreaView>
   );
