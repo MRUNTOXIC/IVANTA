@@ -7,7 +7,7 @@ import type { AuthUser, UserRole } from '../auth/types';
 // Prefer `EXPO_PUBLIC_API_BASE` (e.g. "http://192.168.1.66:3000/api" or "https://ivantaproperty.com/api").
 export const API_BASE =
   (process.env.EXPO_PUBLIC_API_BASE as string | undefined) ||
-  'http://192.168.1.66:3000/api';
+  'https://ivantaproperties.com/api';
 
 const DEMO_MODE = (process.env.EXPO_PUBLIC_DEMO_MODE as string | undefined) === 'true';
 
