@@ -257,57 +257,37 @@ export default function PropertiesScreen() {
         </View>
       </View>
 
-      {/* Result count + pills + Grid all in one FlatList */}
+      <View style={styles.resultBar}>
+        <Text style={styles.resultCount}>{filtered.length} properties found</Text>
+        {activeCount > 0 && <TouchableOpacity onPress={clearAll}><Text style={styles.clearAll}>Clear all</Text></TouchableOpacity>}
+      </View>
+      {activeCount > 0 && (
+        <View style={styles.pillsWrap}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsContent}>
+            {searchQuery.trim() && <TouchableOpacity style={styles.pill} onPress={() => setSearchQuery('')}><Text style={styles.pillText}>Search: {searchQuery.trim()}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>}
+            {selectedTypes.map(t => <TouchableOpacity key={t} style={styles.pill} onPress={() => setSelectedTypes(toggle(selectedTypes, t))}><Text style={styles.pillText}>{PROP_TYPES.find(p => p.value === t)?.label ?? t}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
+            {selectedSubTypes.map(st => <TouchableOpacity key={st} style={styles.pill} onPress={() => setSelectedSubTypes(toggle(selectedSubTypes, st))}><Text style={styles.pillText}>Sub: {st}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
+            {selectedBedrooms.map(b => <TouchableOpacity key={b} style={styles.pill} onPress={() => setSelectedBedrooms(toggle(selectedBedrooms, b))}><Text style={styles.pillText}>Bed: {b}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
+            {selectedBudgets.map(b => <TouchableOpacity key={b} style={styles.pill} onPress={() => setSelectedBudgets(toggle(selectedBudgets, b))}><Text style={styles.pillText}>{b}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
+            {budgetMode === 'custom' && (minPrice.trim() || maxPrice.trim()) && <TouchableOpacity style={styles.pill} onPress={() => { setMinPrice(''); setMaxPrice(''); }}><Text style={styles.pillText}>₹{minPrice||'0'}-{maxPrice||'∞'}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>}
+            {(minSqft.trim() || maxSqft.trim()) && <TouchableOpacity style={styles.pill} onPress={() => { setMinSqft(''); setMaxSqft(''); }}><Text style={styles.pillText}>{minSqft||'0'}-{maxSqft||'∞'} sqft</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>}
+            {selectedFacing.map(f => <TouchableOpacity key={f} style={styles.pill} onPress={() => setSelectedFacing(toggle(selectedFacing, f))}><Text style={styles.pillText}>{f}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
+            {selectedAreas.map(a => <TouchableOpacity key={a} style={styles.pill} onPress={() => setSelectedAreas(toggle(selectedAreas, a))}><Text style={styles.pillText}>{a}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
+          </ScrollView>
+        </View>
+      )}
+      {/* Grid */}
       <FlatList
         data={filtered}
         keyExtractor={i => i._id}
         numColumns={2}
         columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 12 }}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingTop: 10, paddingBottom: 24 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#c0392b" />}
-        ListHeaderComponent={
-          <>
-            {/* Result count bar */}
-            <View style={styles.resultBar}>
-              <Text style={styles.resultCount}>{filtered.length} properties found</Text>
-              {activeCount > 0 && (
-                <TouchableOpacity onPress={clearAll}>
-                  <Text style={styles.clearAll}>Clear all</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            {/* Active filter pills — inline, no separate block */}
-            {activeCount > 0 && (
-              <View style={styles.pillsWrap}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsContent}>
-                  {searchQuery.trim() && <TouchableOpacity style={styles.pill} onPress={() => setSearchQuery('')}><Text style={styles.pillText}>Search: {searchQuery.trim()}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>}
-                  {selectedTypes.map(t => <TouchableOpacity key={t} style={styles.pill} onPress={() => setSelectedTypes(toggle(selectedTypes, t))}><Text style={styles.pillText}>{PROP_TYPES.find(p => p.value === t)?.label ?? t}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
-                  {selectedSubTypes.map(st => <TouchableOpacity key={st} style={styles.pill} onPress={() => setSelectedSubTypes(toggle(selectedSubTypes, st))}><Text style={styles.pillText}>Sub: {st}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
-                  {selectedBedrooms.map(b => <TouchableOpacity key={b} style={styles.pill} onPress={() => setSelectedBedrooms(toggle(selectedBedrooms, b))}><Text style={styles.pillText}>Bed: {b}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
-                  {selectedBudgets.map(b => <TouchableOpacity key={b} style={styles.pill} onPress={() => setSelectedBudgets(toggle(selectedBudgets, b))}><Text style={styles.pillText}>{b}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
-                  {budgetMode === 'custom' && (minPrice.trim() || maxPrice.trim()) && <TouchableOpacity style={styles.pill} onPress={() => { setMinPrice(''); setMaxPrice(''); }}><Text style={styles.pillText}>₹{minPrice || '0'}-{maxPrice || '∞'}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>}
-                  {(minSqft.trim() || maxSqft.trim()) && <TouchableOpacity style={styles.pill} onPress={() => { setMinSqft(''); setMaxSqft(''); }}><Text style={styles.pillText}>{minSqft || '0'}-{maxSqft || '∞'} sqft</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>}
-                  {selectedFacing.map(f => <TouchableOpacity key={f} style={styles.pill} onPress={() => setSelectedFacing(toggle(selectedFacing, f))}><Text style={styles.pillText}>{f}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
-                  {selectedAreas.map(a => <TouchableOpacity key={a} style={styles.pill} onPress={() => setSelectedAreas(toggle(selectedAreas, a))}><Text style={styles.pillText}>{a}</Text><Ionicons name="close" size={11} color="#c0392b" /></TouchableOpacity>)}
-                </ScrollView>
-              </View>
-            )}
-          </>
-        }
         renderItem={({ item }) => (
-          <PropertyCard
-            property={item}
-            onPress={() => nav.navigate('PropertyDetail', { propertyId: item._id })}
-            isFavorite={favoriteIds.has(item._id)}
-            onFavoritePress={() => toggleFavorite(item._id)}
-          />
+          <PropertyCard property={item} onPress={() => nav.navigate('PropertyDetail', { propertyId: item._id })} isFavorite={favoriteIds.has(item._id)} onFavoritePress={() => toggleFavorite(item._id)} />
         )}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Ionicons name="home-outline" size={56} color="#d1d5db" />
-            <Text style={styles.emptyText}>No properties found</Text>
-          </View>
-        }
+        ListEmptyComponent={<View style={styles.empty}><Ionicons name="home-outline" size={56} color="#d1d5db" /><Text style={styles.emptyText}>No properties found</Text></View>}
       />
     </SafeAreaView>
   );

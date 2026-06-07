@@ -70,12 +70,15 @@ export default function PropertyDetailScreen() {
   const openMap = async () => {
     const query = hasCoords ? `${lat},${lng}` : address;
     if (!query) return;
-    // Use OpenStreetMap — same as website, free
-    const url = hasCoords
-      ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`
-      : `https://www.openstreetmap.org/search?query=${encodeURIComponent(address)}`;
-    const supported = await Linking.canOpenURL(url);
-    if (supported) await Linking.openURL(url);
+    // Try Google Maps app first, fall back to browser
+    const googleMapsApp = hasCoords
+      ? `comgooglemaps://?q=${lat},${lng}&zoom=16`
+      : `comgooglemaps://?q=${encodeURIComponent(address)}`;
+    const googleMapsBrowser = hasCoords
+      ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    const canOpenApp = await Linking.canOpenURL(googleMapsApp);
+    await Linking.openURL(canOpenApp ? googleMapsApp : googleMapsBrowser);
   };
 
   return (
@@ -117,7 +120,7 @@ export default function PropertyDetailScreen() {
               <Text style={styles.sectionTitle}>Location</Text>
               {address ? <Text style={styles.addr}>{address}</Text> : null}
               <TouchableOpacity style={styles.mapBtn} onPress={openMap}>
-                <Ionicons name="map-outline" size={18} color="#2563eb" />
+                <Ionicons name="map-outline" size={18} color="#c0392b" />
                 <Text style={styles.mapBtnText}>Open in Google Maps</Text>
               </TouchableOpacity>
             </>
