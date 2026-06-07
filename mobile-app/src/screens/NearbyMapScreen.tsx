@@ -8,7 +8,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation';
 import { getProperties } from '../services/api';
-import { nearbyProperties, propertyLocation, LatLng } from '../services/location';
+import { nearbyProperties, propertyLocation, LatLng, getDistanceKm } from '../services/location';
 import type { Property } from '../types/Property';
 
 export default function NearbyMapScreen() {
@@ -53,7 +53,7 @@ export default function NearbyMapScreen() {
 
   useEffect(() => {
     if (location && properties.length > 0) {
-      setNearby(nearbyProperties(properties, location, 15).slice(0, 20));
+      setNearby(nearbyProperties(properties, location, 5).slice(0, 20));
     }
   }, [location, properties]);
 
@@ -136,6 +136,10 @@ export default function NearbyMapScreen() {
                 >
                   <Text style={styles.propertyCardTitle} numberOfLines={2}>{property.title}</Text>
                   <Text style={styles.propertyCardLocation}>{property.area}, {property.city}</Text>
+                  {location && (() => {
+                    const dist = getDistanceKm(location, coords!);
+                    return <Text style={styles.propertyCardDist}>📍 {dist < 1 ? `${Math.round(dist * 1000)}m away` : `${dist.toFixed(1)}km away`}</Text>;
+                  })()}
                 </TouchableOpacity>
               );
             })}
@@ -168,5 +172,6 @@ const styles = StyleSheet.create({
   propertyList: { paddingLeft: 16, paddingTop: 12, paddingBottom: 18, gap: 12 },
   propertyCard: { width: 220, backgroundColor: '#fff', borderRadius: 16, padding: 16, marginRight: 12, borderWidth: 1, borderColor: '#e5e7eb' },
   propertyCardTitle: { fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 6 },
-  propertyCardLocation: { fontSize: 12, color: '#6b7280' },
+  propertyCardLocation: { fontSize: 12, color: '#6b7280', marginBottom: 4 },
+  propertyCardDist: { fontSize: 11, color: '#c0392b', fontWeight: '600' },
 });

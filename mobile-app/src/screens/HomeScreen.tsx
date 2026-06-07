@@ -74,7 +74,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (userLocation && allProperties.length > 0) {
-      setNearbyList(nearbyProperties(allProperties, userLocation, 15).slice(0, 10));
+      setNearbyList(nearbyProperties(allProperties, userLocation, 3).slice(0, 10));
     }
   }, [userLocation, allProperties]);
 
